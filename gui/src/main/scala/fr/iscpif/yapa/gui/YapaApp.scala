@@ -1,4 +1,4 @@
-package fr.iscpif.yapa
+package fr.iscpif.yapa.gui
 
 object YapaApp  {
 }
