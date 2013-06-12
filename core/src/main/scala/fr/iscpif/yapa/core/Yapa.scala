@@ -1,10 +1,14 @@
 package fr.iscpif.yapa.core
 
-import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.SSHClient
+import net.schmizz.sshj.transport.verification.HostKeyVerifier
+import java.security.PublicKey
+;
 
 class SshObject {
   val ssh = new SSHClient
-  //ssh.addHostKeyVerifier
+  ssh.addHostKeyVerifier(new HostKeyVerifier {
+    def verify(p1: String, p2: Int, p3: PublicKey) = true })
   def connection(host:String, user:String, mdp:String) = {
     ssh.loadKnownHosts
     ssh.connect(host)
@@ -20,5 +24,5 @@ class SshObject {
 
 object Yapa extends App {
   val ssh = new SshObject
-  ssh.connection("localhost", "martin-port", "")
+  ssh.connection("localhost", "yapa", "yapa")
 }
