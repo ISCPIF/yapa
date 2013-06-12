@@ -6,8 +6,6 @@ object YapaBuild extends Build {
 
  override def settings = super.settings ++ Seq(scalaVersion := "2.10.1", organization := "fr.iscpif")
 
- val scalaSwing = "org.scala-lang" % "scala-swing" % "2.10.1"
-
  lazy val yapa = Project(id = "yapa", base = file("yapa"))
 
  lazy val core = Project(id = "core", base = file("core")) settings (libraryDependencies ++= Seq("net.schmizz" % "sshj" % "0.8.1")) dependsOn(yapa)
