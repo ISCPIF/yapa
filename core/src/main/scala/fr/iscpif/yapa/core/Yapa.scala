@@ -3,9 +3,9 @@ package fr.iscpif.yapa.core
 import net.schmizz.sshj._
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import java.security.PublicKey
-;
 
-class SshObject {
+
+class SshObject(host:String, port:Int, user:String, pass:String) {
 
   val ssh = new SSHClient
   ssh.addHostKeyVerifier(new HostKeyVerifier {
@@ -13,22 +13,37 @@ class SshObject {
   ssh.setConnectTimeout(0)
   ssh.setTimeout(0)
 
-  def connection(host:String, port:Int, user:String, mdp:String) = {
+  lazy val hosts = host
+  lazy val ports = port
+  lazy val users = user
+  lazy val mdp = pass
+
+  def connection = {
     ssh.loadKnownHosts
     println("Try connection")
-    ssh.connect(host, port)
+    ssh.connect(hosts, ports)
     try {
-      ssh.authPassword(user, mdp)
+      ssh.authPassword(users, mdp)
       val session = ssh.startSession
       println("Seem legit")
       session.close
     } finally { ssh.disconnect
     println("finally")}
   }
+}
+
+class VM(path:String) {
+
+  lazy val paths = path
+
+  def start = {
+
+
+  }
 
 }
 
 object Yapa extends App {
-  val ssh = new SshObject
-  ssh.connection("localhost", 2222, "yapa", "yapa")
+  val ssh = new SshObject("localhost", 2222, "yapa", "yapa")
+  ssh.connection
 }
