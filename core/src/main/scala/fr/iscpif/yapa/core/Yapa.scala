@@ -3,6 +3,8 @@ package fr.iscpif.yapa.core
 import net.schmizz.sshj._
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import java.security.PublicKey
+import net.schmizz.sshj.connection.channel.direct.Session
+import scala.util._
 
 
 class SshObject(host:String, port:Int, user:String, pass:String) {
@@ -19,24 +21,27 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   lazy val users = user
   lazy val mdp = pass
 
+  def retry[T](f: => T, i:Int): T = {
+    println("Wait. . .")
+   Try(f) match {
+     case Success(r) => r
+     case Failure(e) => {if (i < 2000) {retry(f, i + 1)}
+     else
+     {throw new RuntimeException("VM crash")}}
+   }
+  }
+
+
   def connection = {
     println("Try connection")
-    var troll = true
-    while (troll)
-    {
-      try {
-       ssh.connect(hosts, ports)
-      troll = false
-      }
-      catch {case _ => println("wait. . .")
-      troll = true}
-    }
+    retry(ssh.connect(hosts, ports), 0)
     try {
       ssh.authPassword(users, mdp)
-      val session = ssh.startSession
+      val session:Session = retry(ssh.startSession, 0)
       println("Seem legit")
       session.exec("sudo -i")
       val str = session.getOutputStream
+      session.exec("halt")
       println(str)
       var test : Boolean = true
       while(test) {
@@ -52,17 +57,16 @@ class VM(path:String) {
 
   lazy val paths = path
   lazy val runtime = Runtime.getRuntime()
-
-  def start = {
-       println("qemu-system-x86_64 "+paths+" -redir tcp:2222::22")
-       runtime.exec("qemu-system-x86_64 "+paths+" -redir tcp:2222::22")
-  }
-
+  println("qemu-system-x86_64 "+paths+" -redir tcp:2222::22")
+  def process = runtime.exec("qemu-system-x86_64 "+paths+" -redir tcp:2222::22")
 }
 
 object Yapa extends App {
   val vm = new VM("/media/martin-port/test/DDV.img")
-  vm.start
+  val p = vm.process
   val ssh = new SshObject("localhost", 2222, "yapa", "yapa")
+  try
   ssh.connection
+  finally { println("prog end")
+    p.destroy()}
 }
