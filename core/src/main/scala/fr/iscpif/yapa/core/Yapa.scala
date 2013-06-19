@@ -21,11 +21,24 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   lazy val users = user
   lazy val mdp = pass
 
+  def execReturnCode(session: Session, cde: String) = {
+    val cmd = session.exec(cde)
+    try {
+      cmd.join
+      cmd.getExitStatus
+    } finally cmd.close
+  }
+
+  def exec(session: Session, cde: String) = {
+    val retCode = execReturnCode(session, cde)
+    if (retCode != 0) throw new RuntimeException("Return code was no 0 but " + retCode)
+  }
+
   def retry[T](f: => T, i:Int): T = {
     println("Wait. . .")
    Try(f) match {
      case Success(r) => r
-     case Failure(e) => {if (i < 2000) {retry(f, i + 1)}
+     case Failure(e) => {if (i < 200) {retry(f, i + 1)}
      else
      {throw new RuntimeException("VM crash")}}
    }
@@ -39,13 +52,18 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
       ssh.authPassword(users, mdp)
       val session:Session = retry(ssh.startSession, 0)
       println("Seem legit")
-      session.exec("sudo -i")
-      val str = session.getOutputStream
-      session.exec("halt")
-      println(str)
+      exec(session, "sudo -i")
       var test : Boolean = true
       while(test) {
-        test = readBoolean()
+        val strO = session.getOutputStream
+        val strI = session.getInputStream
+        val cmd = readLine()
+        if (cmd != "")
+        {exec(session, cmd)}
+        println("Output = "+strO)
+        println("Input = "+strI)
+        if (cmd == "stop")
+        {test = false}
       }
       session.close
     } finally { ssh.disconnect
@@ -55,10 +73,11 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
 
 class VM(path:String) {
 
-  lazy val paths = path
-  lazy val runtime = Runtime.getRuntime()
-  println("qemu-system-x86_64 "+paths+" -redir tcp:2222::22")
-  def process = runtime.exec("qemu-system-x86_64 "+paths+" -redir tcp:2222::22")
+  lazy val paths = "/usr/bin/qemu-system-x86_64 "+path+" -redir tcp:2222::22"
+  println(paths)
+  def process = {
+    Runtime.getRuntime.exec(paths)
+  }
 }
 
 object Yapa extends App {
