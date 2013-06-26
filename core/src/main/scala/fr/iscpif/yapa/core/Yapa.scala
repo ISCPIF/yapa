@@ -5,6 +5,7 @@ import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import java.security.PublicKey
 import net.schmizz.sshj.connection.channel.direct.Session
 import scala.util._
+import scala.sys.process.Process
 
 
 class SshObject(host:String, port:Int, user:String, pass:String) {
@@ -34,25 +35,28 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     if (retCode != 0) throw new RuntimeException("Return code was no 0 but " + retCode)
   }
 
-  def retry[T](f: => T, i:Int): T = {
+  def retry[T](f: => T): T = {
+    def retry0[T](f: =>T, i:Int): T = {
     println("Wait. . .")
    Try(f) match {
      case Success(r) => r
-     case Failure(e) => {if (i < 200) {retry(f, i + 1)}
+     case Failure(e) => {if (i < 200) {retry0(f, i + 1)}
      else
      {throw new RuntimeException("VM crash")}}
    }
+    }
+    retry0(f, 0)
   }
 
 
   def connection = {
     println("Try connection")
-    retry(ssh.connect(hosts, ports), 0)
+    retry(ssh.connect(hosts, ports))
     try {
       ssh.authPassword(users, mdp)
-      val session:Session = retry(ssh.startSession, 0)
+      val session:Session = retry(ssh.startSession)
       println("Seem legit")
-      exec(session, "sudo -i")
+      retry(exec(session, "sudo -i"))
       var test : Boolean = true
       while(test) {
         val strO = session.getOutputStream
@@ -71,21 +75,23 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   }
 }
 
-class VM(path:String) {
+class VM(pathq:String, path:String) {
 
-  lazy val paths = "/usr/bin/qemu-system-x86_64 "+path+" -redir tcp:2222::22"
+  lazy val paths = path
+  lazy val pathqs = pathq
   println(paths)
   def process = {
-    Runtime.getRuntime.exec(paths)
+    Process(pathqs+" "+paths+" -redir tcp:2222::22").run()
   }
 }
 
 object Yapa extends App {
-  val vm = new VM("/media/martin-port/test/DDV.img")
+  val vm = new VM("qemu-system-x86_64", "/media/martin-port/test/DDV.img")
   val p = vm.process
   val ssh = new SshObject("localhost", 2222, "yapa", "yapa")
   try
   ssh.connection
   finally { println("prog end")
-    p.destroy()}
+    p.destroy()
+  }
 }
