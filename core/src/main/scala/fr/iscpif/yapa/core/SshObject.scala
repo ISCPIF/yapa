@@ -5,6 +5,7 @@ import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import scala.util.{Failure, Success, Try}
+import net.schmizz.sshj.common.IOUtils
 
 class SshObject(host:String, port:Int, user:String, pass:String) {
 
@@ -60,12 +61,14 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
         println("Seem legit")
         val cmd = readLine()
         if (cmd != "")
-        {exec(session, cmd)}
-        print("Output = "+session.getOutputStream)
-        print("Output = "+session.getOutputStream)
-        print("Input = "+session.getInputStream)
-        print("Input = "+session.getInputStream)
-        if (cmd == "stoplala")
+        {
+         val cmdReturn = session.exec(cmd)
+         cmdReturn.join
+         val test = IOUtils.readFully(cmdReturn.getInputStream).toString
+          cmdReturn.close
+          println(test)
+        }
+        if (cmd == "stopyapa")
         {test = false}
         session.close
       }
