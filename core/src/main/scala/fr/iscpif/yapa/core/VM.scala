@@ -8,6 +8,6 @@ class VM(pathq:String, path:String) {
   lazy val pathqs = pathq
   println(paths)
   def process = {
-    Process(pathqs+" "+paths+" -redir tcp:2222::22").run()
+    Process(pathqs+" "+paths+" -redir tcp:2222::22 -nographic").run()
   }
 }

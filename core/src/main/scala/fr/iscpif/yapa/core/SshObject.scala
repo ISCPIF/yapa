@@ -21,17 +21,25 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   lazy val users = user
   lazy val mdp = pass
 
-  def execReturnCode(session: Session, cde: String) = {
-    val cmd = session.exec(cde)
-    try {
-      cmd.join
-      cmd.getExitStatus
-    } finally cmd.close
+  def withSession(f:(Session) => Unit) = {
+
+    val session:Session = ssh.startSession
+    println("Open session")
+    f(session)
+    session.close
+    println("Close session")
   }
 
-  def exec(session: Session, cde: String) = {
-    val retCode = execReturnCode(session, cde)
-    if (retCode != 0) throw new RuntimeException("Return code was no 0 but " + retCode)
+  def exec(cmd: String) =  {
+    def do_cmd(session: Session) = {
+      val cmdReturn = session.exec(cmd)
+      cmdReturn.join
+      val test = IOUtils.readFully(cmdReturn.getInputStream).toString
+      cmdReturn.close
+      println(test)
+    }
+    println("Start command")
+    withSession(do_cmd)
   }
 
   def retry[T](f: => T): T = {
@@ -49,30 +57,27 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     retry0(f, 0)
   }
 
+  def disconnect = {
+    println("Stop connection")
+    ssh.disconnect
+  }
 
-  def connection = {
+  def connect = {
     println("Try connection")
     retry(ssh.connect(hosts, ports))
-    try {
-      ssh.authPassword(users, mdp)
-      var test : Boolean = true
-      while(test) {
-        val session:Session = retry(ssh.startSession)
-        println("Seem legit")
-        val cmd = readLine()
-        if (cmd != "")
-        {
-         val cmdReturn = session.exec(cmd)
-         cmdReturn.join
-         val test = IOUtils.readFully(cmdReturn.getInputStream).toString
-          cmdReturn.close
-          println(test)
-        }
-        if (cmd == "stopyapa")
-        {test = false}
-        session.close
-      }
-    } finally { ssh.disconnect
-      println("finally")}
+    ssh.authPassword(users, mdp)
+  }
+
+  def chat = {
+
+    connect
+    var cmd: String = ""
+    while (cmd != "stop-YAPA")
+    {
+    if (cmd != "") {
+      exec(cmd) }
+     cmd = readLine()
+    }
+    disconnect
   }
 }
