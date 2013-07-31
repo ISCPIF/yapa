@@ -5,7 +5,7 @@ import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import scala.util.{Failure, Success, Try}
-import net.schmizz.sshj.common.IOUtils
+import net.schmizz.sshj.common.{StreamCopier}
 
 class SshObject(host:String, port:Int, user:String, pass:String) {
 
@@ -22,7 +22,6 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   lazy val mdp = pass
 
   def withSession(f:(Session) => Unit) = {
-
     val session:Session = ssh.startSession
     println("Open session")
     f(session)
@@ -30,13 +29,28 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     println("Close session")
   }
 
-  def exec(cmd: String) =  {
+  def exec() =  {
     def do_cmd(session: Session) = {
-      val cmdReturn = session.exec(cmd)
-      cmdReturn.join
-      val test = IOUtils.readFully(cmdReturn.getInputStream).toString
-      cmdReturn.close
-      println(test)
+      session.allocateDefaultPTY
+      println("start TEST")
+      val shell: Session.Shell = session.startShell
+      new StreamCopier(shell.getInputStream, System.out).bufSize(shell.getLocalMaxPacketSize).spawn("stdout")
+      new StreamCopier(shell.getErrorStream, System.err).bufSize(shell.getLocalMaxPacketSize).spawn("stderr")
+     // try {
+     // new StreamCopier(System.in, shell.getOutputStream).bufSize(shell.getRemoteMaxPacketSize).copy //.spawn("stdin")
+     // }
+     // catch {case e: Exception => }
+     (new StreamTransit).show(shell)
+      println(".")
+      //var cmd: String = ""
+      //while (cmd != "stop-YAPA")
+      //{
+      //   System.console.readPassword()
+      //}
+      //cmdReturn.join
+      //val test = IOUtils.readFully(cmdReturn.getInputStream).toString
+      //cmdReturn.close
+      //println(test)
     }
     println("Start command")
     withSession(do_cmd)
@@ -71,13 +85,9 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   def chat = {
 
     connect
-    var cmd: String = ""
-    while (cmd != "stop-YAPA")
-    {
-    if (cmd != "") {
-      exec(cmd) }
-     cmd = readLine()
-    }
+
+     exec
+
     disconnect
   }
 }
