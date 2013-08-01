@@ -22,7 +22,7 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   lazy val mdp = pass
 
   def withSession(f:(Session) => Unit) = {
-    val session:Session = ssh.startSession
+    val session:Session = retry(ssh.startSession)
     println("Open session")
     f(session)
     session.close
