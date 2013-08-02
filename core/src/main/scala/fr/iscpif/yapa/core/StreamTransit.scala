@@ -18,7 +18,7 @@ class StreamTransit {
       read
     }
 
-    val buf = new Array[Byte](shell.getRemoteMaxPacketSize)
+    val buf = new Array[Byte](1)
     try
     {
       var test = true
@@ -26,14 +26,15 @@ class StreamTransit {
     {
       shell.getOutputStream.write(buf, 0, read)
       shell.getOutputStream.flush()
-      val str = buf.toVector
-      str.map(x => x.toInt match {
-        case -1 =>
-        case 3 => test = false
-        case 4 => test = false
-        case 8 => print("\b \b")
-        case 13 =>
-        case _ =>})
+      //val str = buf.map(_.toInt)
+       buf.foreach(print)
+      buf.foreach(_ match {
+        case 0x3 => test = false
+        case 0x4 => test = false
+        case 0x8 => print("\b \b")
+        case _ =>
+        //case x: Any => println("other : " + x)
+        })
 
     }}
     catch {case e: Exception => }
