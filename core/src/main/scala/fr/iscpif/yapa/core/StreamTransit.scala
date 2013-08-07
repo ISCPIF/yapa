@@ -39,8 +39,8 @@ class StreamTransit {
         test.add(0, false)}
         case 4 => {test.remove(0)
           test.add(0, false)}
-        case 10 => { if (this.tab.elementAt(0).capacity > 1)
-        {this.tab.add(0, new util.Vector[Byte](1))}
+        case 10 => { if (this.tab.elementAt(0).capacity > 0)
+        {this.tab.add(0, new util.Vector[Byte](0))}
         up = 1}
         case 27 => {test.remove(1)
           test.add(1, true)}
@@ -60,7 +60,10 @@ class StreamTransit {
           print(tab.elementAt(up))
           up = (up + 1)
         }}}
-        case 127 => print(clear*3)
+        case 127 => {print(clear*3)
+          val i = this.tab.elementAt(0).capacity
+          if ((this.tab.elementAt(0).capacity() -1) > 0)
+        this.tab.elementAt(0).remove(i)}
         case _ =>
         })
       if (buf(0) != 10 && buf(0) != 127 && !(test.elementAt(1) || test.elementAt(2) || test.elementAt(3))) {
