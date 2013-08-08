@@ -12,6 +12,15 @@ class StreamTransit {
 
   def show (shell : Session.Shell) {
     var read : Int = 0
+    val buf = new Array[Byte](1)
+    val buff = "stty -echo\n"
+    buff.foreach(a => {buf(0) = a.toByte
+      shell.getOutputStream.write(buf, 0, 1)
+      shell.getOutputStream.flush()})
+    val buff2 = "history -c\n"
+    buff2.foreach(a => {buf(0) = a.toByte
+      shell.getOutputStream.write(buf, 0, 1)
+      shell.getOutputStream.flush()})
 
     def my_read(buf :Array[Byte])
     {
@@ -19,7 +28,6 @@ class StreamTransit {
       read
     }
 
-    val buf = new Array[Byte](1)
     try
     {
       var test = new  util.Vector[Boolean](4)
@@ -28,7 +36,7 @@ class StreamTransit {
       test.add(false)
       test.add(false)
       test.add(false)
-      var up = 1
+      var up = 0
       val clear = "\b \b"
     while (test.elementAt(0) && (my_read(buf) != -1))
     {
@@ -39,9 +47,9 @@ class StreamTransit {
         test.add(0, false)}
         case 4 => {test.remove(0)
           test.add(0, false)}
-        case 10 => { if (this.tab.elementAt(0).capacity > 0)
+        case 10 => { if (this.tab.elementAt(0).size > 0)
         {this.tab.add(0, new util.Vector[Byte](0))}
-        up = 1}
+        up = 0}
         case 27 => {test.remove(1)
           test.add(1, true)}
         case 91 => {if (test.elementAt(1))
@@ -55,22 +63,41 @@ class StreamTransit {
           test.remove(3)
           test.add(3, true)
           print(clear*4)
-          if (up < (tab.capacity - 1))
-          {
-          print(tab.elementAt(up))
           up = (up + 1)
-        }}}
+          if (up < tab.size)
+          {
+            print(clear*tab.elementAt(up - 1).size)
+            val a = 0
+            for (a <- 0 to (tab.elementAt(up).size - 1))
+            {print(tab.elementAt(up).elementAt(a).toChar)}
+          }
+        else {up = up - 1}
+        }}
+        case 66 => {if (test.elementAt(2))
+        {test.remove(2)
+          test.add(2, false)
+          test.remove(3)
+          test.add(3, true)
+          print(clear*4)
+          up = (up - 1)
+          if (up >= 0)
+          {
+            print(clear*tab.elementAt(up + 1).size)
+            val a = 0
+            for (a <- 0 to (tab.elementAt(up).size - 1))
+            {print(tab.elementAt(up).elementAt(a).toChar)}
+          }
+        else {up = (up + 1)}}}
         case 127 => {print(clear*3)
-          val i = this.tab.elementAt(0).capacity
-          if ((this.tab.elementAt(0).capacity() -1) > 0)
-        this.tab.elementAt(0).remove(i)}
+          val i = this.tab.elementAt(0).size - 1
+          if ((this.tab.elementAt(0).size) > 0) {
+        this.tab.elementAt(0).remove(i)}}
         case _ =>
         })
       if (buf(0) != 10 && buf(0) != 127 && !(test.elementAt(1) || test.elementAt(2) || test.elementAt(3))) {
         this.tab.elementAt(0).add(buf(0))}
       shell.getOutputStream.write(buf, 0, read)
       shell.getOutputStream.flush()
-      //println("")
     }}
     catch {case e: Exception => println(e)}
   }
