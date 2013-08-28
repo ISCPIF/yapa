@@ -5,7 +5,7 @@ import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import scala.util.{Failure, Success, Try}
-import net.schmizz.sshj.common.{StreamCopier}
+import net.schmizz.sshj.common.StreamCopier
 
 class SshObject(host:String, port:Int, user:String, pass:String) {
 

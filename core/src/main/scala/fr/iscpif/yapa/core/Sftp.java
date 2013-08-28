@@ -22,7 +22,11 @@
 
 package fr.iscpif.yapa.core;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpATTRS;
+import com.jcraft.jsch.SftpException;
+import com.jcraft.jsch.SftpProgressMonitor;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

@@ -42,7 +42,8 @@ object Yapa extends App {
     val ssh = new SshObject("localhost", 2222, "yapa", "yapa")
     try {
       //ssh.chat
-      JCTermSwing
+      JCTermSwingFrame.main(new Array[String](0))
+      println("This is the END")
     }
     finally { println("prog end")
       p.destroy()

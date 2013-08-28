@@ -23,6 +23,7 @@
 package fr.iscpif.yapa.core;
 
 import com.jcraft.jsch.*;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.InputStream;

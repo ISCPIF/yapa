@@ -1,7 +1,5 @@
 package fr.iscpif.yapa.core
 
-import net.schmizz.sshj.common.StreamCopier
-import java.io.{PipedOutputStream, PipedInputStream, OutputStream}
 import net.schmizz.sshj.connection.channel.direct.Session
 import java.util
 
