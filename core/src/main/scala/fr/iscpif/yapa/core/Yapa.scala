@@ -1,28 +1,34 @@
 package fr.iscpif.yapa.core
 
 import java.io.File
+import java.util
 
 object Yapa extends App {
 
-  def recursiveListFiles(f: File): Array[File] = {
-    val these = f.listFiles
-    these ++ these.filter(_.isDirectory).flatMap(recursiveListFiles)
-  }
   try {
   val choice = (new File("/media/martin-port/test/")).listFiles()
+  val tab = new util.Vector[File]
   println("which one do you want ?")
-  var i = 0
   choice.foreach(x => {
-    println(i+"/ "+x.getName)
-    i = i + 1
-  })
-  println(i+"/ Enter the VM's path")
+    if ((x.getName).contains(".img"))
+    {tab.add(x)}})
+  for (i <- 0 to (tab.size() - 1))
+  {
+    println(i+"/ "+tab.elementAt(i).getName)
+  }
+  println(tab.size()+"/ Enter the VM's path")
   var f = readInt()
-  while (f< 0 || f > i)
+  while (f< 0 || f > tab.size())
   {println("wrong number. Which one do you want ?")
   f = readInt()}
-
-  val path = choice(f).getAbsolutePath
+  var path = ""
+  if (f != tab.size()) {
+   path = tab.elementAt(f).getAbsolutePath
+  }
+  else {
+    println("path ?")
+    path = readLine()
+  }
   val file = new File(path);
   if(file.exists()) {
     start(path)
@@ -35,7 +41,8 @@ object Yapa extends App {
     Thread.sleep(5000)
     val ssh = new SshObject("localhost", 2222, "yapa", "yapa")
     try {
-      ssh.chat
+      //ssh.chat
+      JCTermSwing
     }
     finally { println("prog end")
       p.destroy()
