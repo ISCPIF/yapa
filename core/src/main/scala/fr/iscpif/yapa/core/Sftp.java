@@ -22,6 +22,7 @@
 
 package fr.iscpif.yapa.core;
 
+import com.jcraft.jsch.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;

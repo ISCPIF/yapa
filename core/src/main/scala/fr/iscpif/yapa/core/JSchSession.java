@@ -22,6 +22,8 @@
 
 package fr.iscpif.yapa.core;
 
+import com.jcraft.jsch.*;
+
 public class JSchSession{
   private static JSch jsch=null;
   private static SessionFactory sessionFactory=null;

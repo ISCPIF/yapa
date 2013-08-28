@@ -22,6 +22,7 @@
 
 package fr.iscpif.yapa.core;
 
+import com.jcraft.jsch.*;
 import javax.swing.*;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
