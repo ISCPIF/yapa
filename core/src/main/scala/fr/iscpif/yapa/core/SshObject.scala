@@ -23,36 +23,15 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
 
   def withSession(f:(Session) => Unit) = {
     val session:Session = retry(ssh.startSession)
-    println("Open session")
     f(session)
     session.close
-    println("Close session")
   }
 
   def exec() =  {
     def do_cmd(session: Session) = {
       session.allocateDefaultPTY
-      println("start TEST")
       val shell: Session.Shell = session.startShell
-      new StreamCopier(shell.getInputStream, System.out).bufSize(shell.getLocalMaxPacketSize).spawn("stdout")
-      new StreamCopier(shell.getErrorStream, System.err).bufSize(shell.getLocalMaxPacketSize).spawn("stderr")
-     // try {
-     // new StreamCopier(System.in, shell.getOutputStream).bufSize(shell.getRemoteMaxPacketSize).copy //.spawn("stdin")
-     // }
-     // catch {case e: Exception => }
-     (new StreamTransit).show(shell)
-      println(".")
-      //var cmd: String = ""
-      //while (cmd != "stop-YAPA")
-      //{
-      //   System.console.readPassword()
-      //}
-      //cmdReturn.join
-      //val test = IOUtils.readFully(cmdReturn.getInputStream).toString
-      //cmdReturn.close
-      //println(test)
     }
-    println("Start command")
     withSession(do_cmd)
   }
 
@@ -72,12 +51,10 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   }
 
   def disconnect = {
-    println("Stop connection")
     ssh.disconnect
   }
 
   def connect = {
-    println("Try connection")
     retry(ssh.connect(hosts, ports))
     ssh.authPassword(users, mdp)
   }

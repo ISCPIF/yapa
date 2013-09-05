@@ -101,6 +101,7 @@ public class JCTermSwingFrame extends JFrame
     enableEvents(AWTEvent.KEY_EVENT_MASK);
     addWindowListener(new WindowAdapter(){
       public void windowClosing(WindowEvent e){
+        Global.vm.stopVM();
         System.exit(0);
       }
     });
@@ -918,6 +919,7 @@ public class JCTermSwingFrame extends JFrame
   }
 
   public static void main(String[] arg){
+      Global.vm.startVM();
     JCTermSwing.setCR(new ConfigurationRepositoryFS());
 
     String s = System.getProperty("jcterm.config.use_ssh_agent");

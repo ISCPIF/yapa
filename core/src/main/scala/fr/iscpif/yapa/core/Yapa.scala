@@ -16,13 +16,15 @@ object Yapa extends App {
   }
   catch {case e: Exception => }
 
-  def setQemuPath(path : String) = {
-    Global.vm.setQemuPath(path)
-  }
-
   def test() = {
     choseVM("/media/martin-port/test/DDV.img")
-     start
+    println(seeVMavaible)
+    setQemuPath("qemu-system-x86_64")
+    start
+  }
+
+  def setQemuPath(path : String) = {
+    Global.vm.setQemuPath(path)
   }
 
   def choseVM(index : Int) : Boolean = {
@@ -56,6 +58,7 @@ object Yapa extends App {
   def start() = {
 
     try {
+      Global.vm.setVMPath(pathVM)
       JCTermSwingFrame.main(new Array[String](0))
     }
     finally { println("prog end")
