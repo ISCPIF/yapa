@@ -2,29 +2,24 @@ package fr.iscpif.yapa.core
 
 import java.io.File
 import java.util
+import sbt.Resolver.file
 
 object Yapa extends App {
-  val tab = new util.Vector[File]
-  var pathVM = ""
+  private val tab = new util.Vector[File]
+  private var pathVM = ""
 
-  try {
-  val choice = (new File("/media/martin-port/test/")).listFiles()
-  choice.foreach(x => {
-    if ((x.getName).contains(".img"))
-    {tab.add(x)}})
-    test()
-  }
-  catch {case e: Exception => }
-
-  def test() = {
-    choseVM("/media/martin-port/test/DDV.img")
-    println(seeVMavaible)
-    setQemuPath("qemu-system-x86_64")
+  override def main(args: Array[String]) {
+    setQemuPath(args(0))
+    choseVM(args(1))
     start
   }
 
   def setQemuPath(path : String) = {
     Global.vm.setQemuPath(path)
+  }
+
+  def setCopyFolder(path : String) = {
+Glob
   }
 
   def choseVM(index : Int) : Boolean = {
@@ -46,7 +41,18 @@ object Yapa extends App {
     return true
   }
 
-  def seeVMavaible() : util.Vector[String] = {
+  def seeVMavaible(folderpath : String) : util.Vector[String] = {
+    try {
+      val file = new File(folderpath)
+      if (!(file.exists()))
+        return null
+      val choice = file.listFiles()
+      choice.foreach(x => {
+        if ((x.getName).contains(".img"))
+        {tab.add(x)}})
+    }
+    catch {case e: Exception => }
+
     val rval = new util.Vector[String]
     for (i <- 0 to (tab.size() - 1))
     {
@@ -56,10 +62,12 @@ object Yapa extends App {
   }
 
   def start() = {
-
     try {
+      if (pathVM != "" && Global.vm.getQemuPath != "")
+      {
       Global.vm.setVMPath(pathVM)
       JCTermSwingFrame.main(new Array[String](0))
+      }
     }
     finally { println("prog end")
     }

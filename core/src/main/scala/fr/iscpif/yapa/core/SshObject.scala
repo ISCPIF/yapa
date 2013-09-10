@@ -5,29 +5,29 @@ import net.schmizz.sshj.connection.channel.direct.Session
 import net.schmizz.sshj.SSHClient
 import net.schmizz.sshj.transport.verification.HostKeyVerifier
 import scala.util.{Failure, Success, Try}
-import net.schmizz.sshj.common.StreamCopier
+import net.schmizz.sshj.xfer.FileSystemFile
 
 class SshObject(host:String, port:Int, user:String, pass:String) {
 
-  val ssh = new SSHClient
+  private val ssh = new SSHClient
   ssh.addHostKeyVerifier(new HostKeyVerifier {
     def verify(p1: String, p2: Int, p3: PublicKey) = true })
   ssh.setConnectTimeout(0)
   ssh.setTimeout(0)
   ssh.loadKnownHosts
 
-  lazy val hosts = host
-  lazy val ports = port
-  lazy val users = user
-  lazy val mdp = pass
+  private lazy val hosts = host
+  private lazy val ports = port
+  private lazy val users = user
+  private lazy val mdp = pass
 
-  def withSession(f:(Session) => Unit) = {
+  private def withSession(f:(Session) => Unit) = {
     val session:Session = retry(ssh.startSession)
     f(session)
     session.close
   }
 
-  def exec() =  {
+  private def exec() =  {
     def do_cmd(session: Session) = {
       session.allocateDefaultPTY
       val shell: Session.Shell = session.startShell
@@ -35,7 +35,7 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     withSession(do_cmd)
   }
 
-  def retry[T](f: => T): T = {
+  private def retry[T](f: => T): T = {
     def retry0[T](f: =>T, i:Int): T = {
       println("Wait. . .")
       Try(f) match {
@@ -50,11 +50,11 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     retry0(f, 0)
   }
 
-  def disconnect = {
+  private def disconnect = {
     ssh.disconnect
   }
 
-  def connect = {
+  private def connect = {
     retry(ssh.connect(hosts, ports))
     ssh.authPassword(users, mdp)
   }
@@ -64,6 +64,16 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     connect
 
      exec
+
+    disconnect
+  }
+
+  def copy(src : String, target : String) = {
+
+    connect
+    try {
+      ssh.newSCPFileTransfer().download(src, new FileSystemFile(target))
+    }
 
     disconnect
   }
