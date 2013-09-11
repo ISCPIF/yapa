@@ -59,22 +59,14 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     ssh.authPassword(users, mdp)
   }
 
-  def chat = {
-
-    connect
-
-     exec
-
-    disconnect
+  def download(src : String, target : String) = {
+      ssh.newSCPFileTransfer().newSCPDownloadClient().copy(src, new FileSystemFile(target))
   }
 
-  def copy(src : String, target : String) = {
-
+  def upload(src : String, target : String) = {
     connect
-    try {
-      ssh.newSCPFileTransfer().download(src, new FileSystemFile(target))
-    }
-
+    //ssh.useCompression()
+    ssh.newSCPFileTransfer().newSCPUploadClient().copy(new FileSystemFile(src), target)
     disconnect
   }
 }

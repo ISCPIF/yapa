@@ -2,15 +2,26 @@ package fr.iscpif.yapa.core
 
 import java.io.File
 import java.util
-import sbt.Resolver.file
 
 object Yapa extends App {
   private val tab = new util.Vector[File]
   private var pathVM = ""
 
   override def main(args: Array[String]) {
-    setQemuPath(args(0))
-    choseVM(args(1))
+    if (args.size > 0)
+    {
+      println(args(0))
+      setQemuPath(args(0))
+      if (args.size > 1)
+      {
+        println(args(1))
+        setCopyFolder(args(1))
+        if (args.size > 2) {
+          println(args(2))
+          choseVM(args(2))
+        }
+      }
+    }
     start
   }
 
@@ -19,7 +30,7 @@ object Yapa extends App {
   }
 
   def setCopyFolder(path : String) = {
-Glob
+    Global.vm.setCopyFolder(path)
   }
 
   def choseVM(index : Int) : Boolean = {
@@ -46,6 +57,7 @@ Glob
       val file = new File(folderpath)
       if (!(file.exists()))
         return null
+      tab.clear
       val choice = file.listFiles()
       choice.foreach(x => {
         if ((x.getName).contains(".img"))

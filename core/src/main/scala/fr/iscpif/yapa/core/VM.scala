@@ -16,10 +16,15 @@ class VM() {
   def startVM = {
     vm = Process(pathqs+" "+paths+" -redir tcp:2222::22 -nographic").run()
     Thread.sleep(5000)
-    (new SshObject("127.0.0.1", 2222, "yapa", "yapa")).chat
+    val connect = new SshObject("127.0.0.1", 2222, "yapa", "yapa")
+    println("upload start")
+    connect.upload(pathFolder, "~/")
+    println("END startVM")
   }
 
   def stopVM = {
+    val connect = new SshObject("127.0.0.1", 2222, "yapa", "yapa")
+    connect.download("~/", pathFolder)
     vm.destroy()
     println("VM destroy")
   }
