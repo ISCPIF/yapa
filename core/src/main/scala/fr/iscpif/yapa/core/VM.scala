@@ -1,6 +1,7 @@
 package fr.iscpif.yapa.core
 
 import scala.sys.process.Process
+import net.schmizz.sshj.xfer.FileSystemFile
 
 class VM() {
 
@@ -12,19 +13,26 @@ class VM() {
     def destroy() {}
   }
   private var pathFolder = ""
+  private var execCmd = ""
 
   def startVM = {
     vm = Process(pathqs+" "+paths+" -redir tcp:2222::22 -nographic").run()
     Thread.sleep(5000)
     val connect = new SshObject("127.0.0.1", 2222, "yapa", "yapa")
-    println("upload start")
-    connect.upload(pathFolder, "~/")
-    println("END startVM")
+    val f = new FileSystemFile(pathFolder)
+    connect.connect
+    connect.upload(pathFolder, f.getName)
+    connect.disconnect
   }
 
   def stopVM = {
     val connect = new SshObject("127.0.0.1", 2222, "yapa", "yapa")
-    connect.download("~/", pathFolder)
+    val f = new FileSystemFile(pathFolder)
+    connect.connect
+    connect.exec("rm -rf "+f.getName)
+    connect.download("cde-package", pathFolder)
+    connect.exec("rm -rf cde-package")
+    connect.disconnect
     vm.destroy()
     println("VM destroy")
   }
@@ -43,5 +51,13 @@ class VM() {
 
   def setCopyFolder(str : String) = {
     pathFolder = str
+  }
+
+  def setCmd(str : String) = {
+    execCmd = str
+  }
+
+  def getCmd : String = {
+    return execCmd
   }
 }

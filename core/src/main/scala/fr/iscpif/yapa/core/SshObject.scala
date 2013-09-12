@@ -12,14 +12,13 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   private val ssh = new SSHClient
   ssh.addHostKeyVerifier(new HostKeyVerifier {
     def verify(p1: String, p2: Int, p3: PublicKey) = true })
-  ssh.setConnectTimeout(0)
-  ssh.setTimeout(0)
   ssh.loadKnownHosts
 
   private lazy val hosts = host
   private lazy val ports = port
   private lazy val users = user
   private lazy val mdp = pass
+  private val timeout = 120
 
   private def withSession(f:(Session) => Unit) = {
     val session:Session = retry(ssh.startSession)
@@ -27,12 +26,18 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     session.close
   }
 
-  private def exec() =  {
-    def do_cmd(session: Session) = {
-      session.allocateDefaultPTY
-      val shell: Session.Shell = session.startShell
+  def exec(cmd : String) = {
+    def exec_cmd(session: Session) = {
+        val str = session.exec(cmd)
+        str.join
+        //println("\n** exit status: " + str.getExitStatus);
     }
-    withSession(do_cmd)
+    withSession(exec_cmd)
+  }
+
+  private def verif() =  {
+    def tryFunc(session: Session) = {    }
+    withSession(tryFunc)
   }
 
   private def retry[T](f: => T): T = {
@@ -50,23 +55,24 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
     retry0(f, 0)
   }
 
-  private def disconnect = {
+  def disconnect = {
     ssh.disconnect
   }
 
-  private def connect = {
+  def connect = {
+    ssh.setConnectTimeout(timeout * 1000)
+    ssh.setTimeout(timeout * 1000)
     retry(ssh.connect(hosts, ports))
     ssh.authPassword(users, mdp)
   }
 
   def download(src : String, target : String) = {
-      ssh.newSCPFileTransfer().newSCPDownloadClient().copy(src, new FileSystemFile(target))
+      ssh.newSCPFileTransfer().download(src, new FileSystemFile(target))
   }
 
   def upload(src : String, target : String) = {
-    connect
+    verif
     //ssh.useCompression()
-    ssh.newSCPFileTransfer().newSCPUploadClient().copy(new FileSystemFile(src), target)
-    disconnect
+    ssh.newSCPFileTransfer().upload(new FileSystemFile(src), target)
   }
 }

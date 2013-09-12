@@ -19,14 +19,22 @@ object Yapa extends App {
         if (args.size > 2) {
           println(args(2))
           choseVM(args(2))
+          if (args.size > 3) {
+            println(args(3))
+            setStartCmd(args(3))
+          }
         }
       }
     }
-    start
+    println(start)
   }
 
   def setQemuPath(path : String) = {
     Global.vm.setQemuPath(path)
+  }
+
+  def setStartCmd(cmd : String) = {
+    Global.vm.setCmd(cmd)
   }
 
   def setCopyFolder(path : String) = {
@@ -73,15 +81,15 @@ object Yapa extends App {
    return rval
   }
 
-  def start() = {
-    try {
-      if (pathVM != "" && Global.vm.getQemuPath != "")
+  def start() : String = {
+      if (pathVM != "" && Global.vm.getQemuPath != "" && pathVM != "" && Global.vm.getCmd != "")
       {
       Global.vm.setVMPath(pathVM)
       JCTermSwingFrame.main(new Array[String](0))
+        return "start : OK"
       }
-    }
-    finally { println("prog end")
-    }
+      else {
+        return """yapa "QemuPath" "ProjectPath" "VirtualMachinePath" "CmdToRunYourProject" """
+      }
   }
 }
