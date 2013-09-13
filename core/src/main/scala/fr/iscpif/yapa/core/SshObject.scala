@@ -67,12 +67,17 @@ class SshObject(host:String, port:Int, user:String, pass:String) {
   }
 
   def download(src : String, target : String) = {
-      ssh.newSCPFileTransfer().download(src, new FileSystemFile(target))
+    try {
+      ssh.newSCPFileTransfer().download(src, new FileSystemFile(target))}
+    catch {case e: Exception => println(e)}
   }
 
   def upload(src : String, target : String) = {
     verif
     //ssh.useCompression()
+    try {
     ssh.newSCPFileTransfer().upload(new FileSystemFile(src), target)
+    }
+    catch {case e: Exception => println(e)}
   }
 }
