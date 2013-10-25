@@ -17,25 +17,42 @@
 package fr.iscpif.yapa.tools
 
 import scala.language.implicitConversions
-import java.io.{OutputStream, InputStream, File}
+import java.io.{FileInputStream, OutputStream, InputStream, File}
+import java.net.URL
+import java.nio.channels.Channel
 
 object IOTools {
   implicit def stringToFile(s: String) = new File(s)
 
+  implicit def fileToString(f: File) = f.getAbsolutePath
+
   implicit def toRichFile(file: File) = new RichFile(file)
 
+  implicit def urlToFileChannel(u: URL) =  fileToFileChannel(new File(u.toURI))
 
-  def copy(is: InputStream, to: OutputStream): Unit = {
+  implicit def fileToFileChannel(f: File) =  {
+    val channel = new FileInputStream(f).getChannel
+  }
+
+ /* def copy(is: InputStream, to: OutputStream): Unit = {
     val buffer = new Array[Byte](8 * 1024)
     Iterator.continually(is.read(buffer)).takeWhile(_ != -1).foreach {
       to.write(buffer, 0, _)
     }
     is.close
     to.close
-  }
+  }    */
 
   def find(file: File, in: File) = list(in).filter {
-    _.getName == file.getName
+      _.getName == file.getName
+    }
+
+
+  def apply[A](of: Option[File],action: File => A) = {
+    of match {
+      case Some(f: File) => action(f)
+      case _ => throw new Throwable("The executable has not been found in the cde-package tree. The packaging failed")
+    }
   }
 
   def list(in: File) = for (f <- new RichFile(in).andTree) yield f

@@ -12,4 +12,6 @@ resolvers += "openmole-public" at "http://maven.openmole.org/public"
 
 libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.10.2"
 
-libraryDependencies += "org.openmole.core" %% "org.openmole.ide.plugin.task.systemexec" % "0.10.0-SNAPSHOT  "
+libraryDependencies += "org.openmole.ide" %% "org.openmole.ide.plugin.task.systemexec" % "0.10.0-SNAPSHOT"
+
+libraryDependencies += "org.openmole.core" %% "org.openmole.misc.replication" % "0.10.0-SNAPSHOT"
