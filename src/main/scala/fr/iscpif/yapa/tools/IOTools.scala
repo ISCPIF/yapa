@@ -34,15 +34,6 @@ object IOTools {
     val channel = new FileInputStream(f).getChannel
   }
 
- /* def copy(is: InputStream, to: OutputStream): Unit = {
-    val buffer = new Array[Byte](8 * 1024)
-    Iterator.continually(is.read(buffer)).takeWhile(_ != -1).foreach {
-      to.write(buffer, 0, _)
-    }
-    is.close
-    to.close
-  }    */
-
   def find(file: File, in: File) = list(in).filter {
       _.getName == file.getName
     }
