@@ -4,7 +4,7 @@ import at.loveoneanother.schale._
 import java.io.File
 import fr.iscpif.yapa.tools.IOTools._
 import fr.iscpif.yapa.tools.IOTools
-import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI2
+import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
 import java.util.UUID
 import org.openmole.misc.tools.io.FileUtil._
 import org.openmole.ide.core.implementation.serializer.GUISerializer
@@ -43,9 +43,10 @@ object Yapa extends App {
   val workingDir = "cde-package" + exe.getParent.split("cde-package").last
 
   val proxies = new Proxies
-  proxies += TaskDataProxyUI(new SystemExecTaskDataUI2(exe.getName + "Task", workingDir, command.cdeLaunchinCommand ,List(command.outputDir)))
+  proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(exe.getName + "Task", workingDir, command.cdeLaunchinCommand ,List(command.outputDir)))
 
   (new GUISerializer).serialize(command.outputDir + "/"+ exe.getName + ".tar", proxies, Iterable())
+  println("val systemTask = new SystemExecTask(" + List(exe.getName + "Task", "\"" +command.cdeLaunchinCommand + "\"", workingDir).mkString(",") + ")" )
   rootdir.delete
 
 }
