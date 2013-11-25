@@ -1,11 +1,15 @@
 import AssemblyKeys._
 import sbtassembly.Plugin._
+import com.typesafe.sbt.SbtNativePackager.Universal
+import NativePackagerKeys._
 
 name := "yapa"
 
 scalaVersion := "2.10.2"
 
 version := "0.1"
+
+packageArchetype.java_application
 
 resolvers ++= Seq(
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -110,3 +114,20 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
                  ).contains(f.data.getName)
     }
  }
+
+ resourceGenerators in Compile <+= (target in Compile, scalaBinaryVersion) map { (dir, version) =>
+  val yapadir = dir / "scala-" + version + "/yapa"
+  val file = new File(yapadir)
+  IO.write(file, "#!/bin/sh\njava -Xmx256M -jar ../lib/yapa.jar \"$@\"")
+  Seq(file)
+}
+
+mappings in Universal := Nil
+
+mappings in Universal <++= (managedResources in Compile, assembly).map { (rs,as) => {
+   val x = Seq(as -> "lib/yapa.jar")
+   val y = rs.map{f=> (f, "bin/"+f.getName)}
+   println("Y " + y.getClass.getName)
+                                       x ++ y
+   }
+}

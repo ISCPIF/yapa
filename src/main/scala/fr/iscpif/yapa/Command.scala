@@ -25,6 +25,7 @@ object Command {
       args match {
         case "-o" :: tail ⇒ parse(tail.tail, c.copy(outputDir = tail.head))
         case "-c" :: tail ⇒ parse(tail.tail, c.copy(launchingCommand = tail.head))
+        case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedd = tail.head.toBoolean))
         case "-i" :: tail  ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
         case s :: tail     ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
         case Nil           ⇒ c
@@ -37,6 +38,7 @@ object Command {
 case class Command(val outputDir: String = "",
                    val launchingCommand: String = "",
                    val ignore: List[String] = List(),
+                   val embedd: Boolean = true,
                    val unknown: List[String]= List()){
   val executable = launchingCommand.split(" ").head
 
