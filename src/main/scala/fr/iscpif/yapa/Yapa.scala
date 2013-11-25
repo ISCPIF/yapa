@@ -21,7 +21,7 @@ object Yapa extends App {
 
   //Copy the cde executable into the rootdir
   val cde = File.createTempFile("tmp", "cde", rootdir)
-  new File(getClass.getClassLoader.getResource("cde_2011-08-15_64bit").toURI).copy(cde)
+   getClass.getClassLoader.getResourceAsStream("cde_2011-08-15_64bit").copy(cde)
   cde.setExecutable(true)
 
   //Run CDEPack
