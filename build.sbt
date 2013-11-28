@@ -125,9 +125,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
 mappings in Universal := Nil
 
 mappings in Universal <++= (managedResources in Compile, assembly).map { (rs,as) => {
-   val x = Seq(as -> "lib/yapa.jar")
-   val y = rs.map{f=> (f, "bin/"+f.getName)}
-   println("Y " + y.getClass.getName)
-                                       x ++ y
+   Seq(as -> "lib/yapa.jar") ++
+   rs.map{f=> (f, "bin/"+f.getName)}
    }
 }

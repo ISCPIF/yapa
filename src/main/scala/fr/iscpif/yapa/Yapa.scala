@@ -39,14 +39,14 @@ object Yapa extends App {
   val all =  IOTools.find(command.executable, command.outputDir + "/cde-package/cde-root")
   val exe = IOTools(all.headOption, {f:File=> f.getAbsolutePath})
 
-
   val workingDir = "cde-package" + exe.getParent.split("cde-package").last
 
   val proxies = new Proxies
-  proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(exe.getName + "Task", workingDir, command.cdeLaunchinCommand ,List(command.outputDir)))
+
+  proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(exe.getName + "Task", workingDir, command.stripedLaunchingCommand ,List((new File(command.outputDir + "/cde-package"),"cde-package"))))
 
   (new GUISerializer).serialize(command.outputDir + "/"+ exe.getName + ".tar", proxies, Iterable(), saveFiles=command.embedd)
-  println("val systemTask = new SystemExecTask(" + List(exe.getName + "Task", "\"" +command.cdeLaunchinCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")" )
+  println("val systemTask = new SystemExecTask(" + List(exe.getName + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")" )
   rootdir.delete
 
 }

@@ -42,5 +42,5 @@ case class Command(val outputDir: String = "",
                    val unknown: List[String]= List()){
   val executable = launchingCommand.split(" ").head
 
-  val cdeLaunchinCommand = launchingCommand.replace(executable, executable + ".cde")
+  val stripedLaunchingCommand = launchingCommand.replace(executable, executable.split("/").last)
 }
