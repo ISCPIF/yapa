@@ -26,7 +26,9 @@ object Yapa extends App {
     cde.setExecutable(true)
 
     //Run CDEPack
-    println(Shell(cde + " " + command.launchingCommand)(new Env(pwd = rootdir)))
+    val shell = Shell(cde + " " + command.launchingCommand)(new Env(pwd = rootdir))
+   shell.waitFor
+  //  println(shell)
     cde.delete
 
     //Copy cde-package into output folder
@@ -57,8 +59,7 @@ object Yapa extends App {
 
   } catch {
     case e: Throwable =>
-    println("int throwable")
-      //println(e.getMessage + "\n" +e.getCause)
-     // Command.help
+      println("Invalid command\n")
+      Command.help
   }
 }
