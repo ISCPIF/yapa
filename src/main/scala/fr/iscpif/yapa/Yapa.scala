@@ -53,7 +53,7 @@ object Yapa extends App {
 
     proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(exe.getName + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
 
-    (new GUISerializer).serialize(command.outputDir + "/" + exe.getName + ".tar", proxies, Iterable(), saveFiles = command.embedd)
+    (new GUISerializer).serialize(command.outputDir + "/" + exe.getName + ".om", proxies, Iterable(), saveFiles = command.embedd)
     println("val systemTask = new SystemExecTask(" + List(exe.getName + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")")
     rootdir.delete
 
