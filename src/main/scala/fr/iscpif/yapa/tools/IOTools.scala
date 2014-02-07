@@ -28,18 +28,22 @@ object IOTools {
 
   implicit def toRichFile(file: File) = new RichFile(file)
 
-  implicit def urlToFileChannel(u: URL) =  fileToFileChannel(new File(u.toURI))
+  implicit def urlToFileChannel(u: URL) = fileToFileChannel(new File(u.toURI))
 
-  implicit def fileToFileChannel(f: File) =  {
+  implicit def fileToFileChannel(f: File) = {
     val channel = new FileInputStream(f).getChannel
   }
 
   def find(file: File, in: File) = list(in).filter {
-      _.getName == file.getName
-    }
+    _.getName == file.getName
+  }
 
+  def recursiveFind(f: File, in: File): Iterable[File] = {
+    val loc = find(f, in)
+    loc ++ loc.filter(_.isDirectory).flatMap(dir => find(f, dir))
+  }
 
-  def apply[A](of: Option[File],action: File => A) = {
+  def apply[A](of: Option[File], action: File => A) = {
     of match {
       case Some(f: File) => action(f)
       case _ => throw new Throwable("The executable has not been found in the cde-package tree. The packaging failed")

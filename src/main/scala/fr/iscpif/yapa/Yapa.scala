@@ -27,8 +27,7 @@ object Yapa extends App {
 
     //Run CDEPack
     val shell = Shell(cde + " " + command.launchingCommand)(new Env(pwd = rootdir))
-   shell.waitFor
-  //  println(shell)
+    shell.waitFor
     cde.delete
 
     //Copy cde-package into output folder
@@ -42,7 +41,8 @@ object Yapa extends App {
         })
     }
 
-    val all = IOTools.find(command.executable, command.outputDir + "/cde-package/cde-root")
+    val all = IOTools.recursiveFind(command.executable + ".cde", command.outputDir + "/cde-package/cde-root")
+
     val exe = IOTools(all.headOption, {
       f: File => f.getAbsolutePath
     })
@@ -51,10 +51,13 @@ object Yapa extends App {
 
     val proxies = new Proxies
 
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(exe.getName + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
+    val cleanExe = exe.getName.replace(".cde","")
+    println(cleanExe)
 
-    (new GUISerializer).serialize(command.outputDir + "/" + exe.getName + ".om", proxies, Iterable(), saveFiles = command.embedd)
-    println("val systemTask = new SystemExecTask(" + List(exe.getName + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")")
+    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
+
+    (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedd)
+    println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\""+command.outputDir + "/cde-package\", \"cde-package\"))")
     rootdir.delete
 
   } catch {
