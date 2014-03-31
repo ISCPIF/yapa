@@ -1,6 +1,5 @@
 package fr.iscpif.yapa
 
-import at.loveoneanother.schale._
 import java.io.File
 import fr.iscpif.yapa.tools.IOTools._
 import fr.iscpif.yapa.tools.IOTools
@@ -9,6 +8,8 @@ import java.util.UUID
 import org.openmole.misc.tools.io.FileUtil._
 import org.openmole.ide.core.implementation.serializer.GUISerializer
 import org.openmole.ide.core.implementation.dataproxy.{Proxies, TaskDataProxyUI}
+
+import sys.process._
 
 object Yapa extends App {
 
@@ -25,9 +26,11 @@ object Yapa extends App {
     getClass.getClassLoader.getResourceAsStream("cde_2011-08-15_64bit").copy(cde)
     cde.setExecutable(true)
 
-    //Run CDEPack
-    val shell = Shell(cde + " " + command.launchingCommand)(new Env(pwd = rootdir))
-    shell.waitFor
+    //Run CDEPack (line break mandatory to prevent ! to consume next line)
+    Process (cde + " " + command.launchingCommand,
+             rootdir,
+             "PWD" -> rootdir.toString) !
+
     cde.delete
 
     //Copy cde-package into output folder
