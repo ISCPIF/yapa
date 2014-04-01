@@ -54,11 +54,21 @@ object Yapa extends App {
     command.outputDir.mkdirs
     rootdir.move(command.outputDir)
 
+    // remove ignored paths
     command.ignore.foreach {
       i =>
         IOTools(IOTools.find(i, command.outputDir + "/cde-package").headOption, {
           f: File => f.delete
         })
+    }
+
+    // add arbitrary requested path to archive
+    command.additions.foreach {
+      i =>
+        val f = new File(i)
+        val dest = new File(command.outputDir + "/cde-package/cde-root/" + i)
+        dest.getParent.mkdirs
+        f.copy(dest)
     }
 
     val all = IOTools.recursiveFind(command.executable + ".cde", command.outputDir + "/cde-package/cde-root")
