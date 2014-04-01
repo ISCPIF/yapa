@@ -24,7 +24,7 @@ import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
 import java.util.UUID
 import org.openmole.misc.tools.io.FileUtil._
 import org.openmole.ide.core.implementation.serializer.GUISerializer
-import org.openmole.ide.core.implementation.dataproxy.{Proxies, TaskDataProxyUI}
+import org.openmole.ide.core.implementation.dataproxy.{ Proxies, TaskDataProxyUI }
 
 import sys.process._
 
@@ -45,15 +45,14 @@ object Yapa extends App {
 
     //Run CDEPack (line break mandatory to prevent ! to consume next line)
     Process(cde + " " + command.launchingCommand,
-            rootdir,
-            "PWD" -> rootdir.toString) !
+      rootdir,
+      "PWD" -> rootdir.toString) !
 
     cde.delete
 
     //Copy cde-package into output folder
     command.outputDir.mkdirs
     rootdir.move(command.outputDir)
-
 
     command.ignore.foreach {
       i =>

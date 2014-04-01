@@ -17,7 +17,7 @@
 package fr.iscpif.yapa.tools
 
 import scala.language.implicitConversions
-import java.io.{FileInputStream, OutputStream, InputStream, File}
+import java.io.{ FileInputStream, OutputStream, InputStream, File }
 import java.net.URL
 import java.nio.channels.Channel
 

@@ -23,16 +23,16 @@ object Command {
 
   @tailrec def parse(args: List[String], c: Command = new Command): Command =
     args match {
-        case "-o" :: tail ⇒ parse(tail.tail, c.copy(outputDir = tail.head))
-        case "-c" :: tail ⇒ parse(tail.tail, c.copy(launchingCommand = tail.head))
-        case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedded = tail.head.toBoolean))
-        case "-i" :: tail ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
-        case "-h" :: tail =>
-          help
-          c
-        case s :: tail    ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
-        case _            ⇒ c
-      }
+      case "-o" :: tail ⇒ parse(tail.tail, c.copy(outputDir = tail.head))
+      case "-c" :: tail ⇒ parse(tail.tail, c.copy(launchingCommand = tail.head))
+      case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedded = tail.head.toBoolean))
+      case "-i" :: tail ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
+      case "-h" :: tail =>
+        help
+        c
+      case s :: tail ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
+      case _ ⇒ c
+    }
 
   def takeArgs(args: List[String]) = args.takeWhile(!_.startsWith("-"))
   def dropArgs(args: List[String]) = args.dropWhile(!_.startsWith("-"))
@@ -49,10 +49,10 @@ object Command {
 }
 
 case class Command(val outputDir: String = "",
-                   val launchingCommand: String = "",
-                   val ignore: List[String] = List(),
-                   val embedded: Boolean = true,
-                   val unknown: List[String]= List()){
+    val launchingCommand: String = "",
+    val ignore: List[String] = List(),
+    val embedded: Boolean = true,
+    val unknown: List[String] = List()) {
   val executable = launchingCommand.split(" ").head
 
   val stripedLaunchingCommand = launchingCommand.replace(executable, executable.split("/").last).replaceFirst("\\s|$", ".cde ")
