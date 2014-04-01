@@ -25,13 +25,13 @@ object Command {
     args match {
         case "-o" :: tail ⇒ parse(tail.tail, c.copy(outputDir = tail.head))
         case "-c" :: tail ⇒ parse(tail.tail, c.copy(launchingCommand = tail.head))
-        case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedd = tail.head.toBoolean))
-        case "-i" :: tail  ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
+        case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedded = tail.head.toBoolean))
+        case "-i" :: tail ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
         case "-h" :: tail =>
           help
           c
-        case s :: tail     ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
-        case _           ⇒ c
+        case s :: tail    ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
+        case _            ⇒ c
       }
 
   def takeArgs(args: List[String]) = args.takeWhile(!_.startsWith("-"))
@@ -41,17 +41,17 @@ object Command {
     "options:\n" +
     "-o (compulsory): the output directory where the packaging archive and the OpenMOLE project are generated\n" +
     "-c (compulsory): the full command with parameters of you code. It must be enclosed in quotation marks\n" +
-    "-e (optional)  : are the program resources embed in the OpenMOLE project ? true / false. It is recomended to render your OpenMOLE workflow fully portable. The default value is true.\n" +
+    "-e (optional)  : are the program resources embedded in the OpenMOLE project ? true / false. It is recommended to render your OpenMOLE workflow fully portable. The default value is true.\n" +
     "-i (optional)  : the list of resources that have to be ignored in the final archive\n\n" +
     "Example: ./yapa -o /tmp/out -c \"myCode -a 14 -b 7 -o /home/toto/file1.csv\"\n\n" +
-    "Visit : http://www.openmole.org/community/package-your-extrenal-appliactions-with-yapa/"
+    "Visit: http://www.openmole.org/documentation/package-your-external-applications-with-yapa/"
   )
 }
 
 case class Command(val outputDir: String = "",
                    val launchingCommand: String = "",
                    val ignore: List[String] = List(),
-                   val embedd: Boolean = true,
+                   val embedded: Boolean = true,
                    val unknown: List[String]= List()){
   val executable = launchingCommand.split(" ").head
 

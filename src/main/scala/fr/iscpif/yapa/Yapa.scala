@@ -44,15 +44,16 @@ object Yapa extends App {
     cde.setExecutable(true)
 
     //Run CDEPack (line break mandatory to prevent ! to consume next line)
-    Process (cde + " " + command.launchingCommand,
-             rootdir,
-             "PWD" -> rootdir.toString) !
+    Process(cde + " " + command.launchingCommand,
+            rootdir,
+            "PWD" -> rootdir.toString) !
 
     cde.delete
 
     //Copy cde-package into output folder
     command.outputDir.mkdirs
     rootdir.move(command.outputDir)
+
 
     command.ignore.foreach {
       i =>
@@ -71,15 +72,14 @@ object Yapa extends App {
 
     val proxies = new Proxies
 
-    val cleanExe = exe.getName.replace(".cde","")
+    val cleanExe = exe.getName.replace(".cde", "")
     println(cleanExe)
 
     proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
 
-    (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedd)
-    println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\""+command.outputDir + "/cde-package\", \"cde-package\"))")
+    (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
+    println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\"" + command.outputDir + "/cde-package\", \"cde-package\"))")
     rootdir.delete
-
   } catch {
     case e: Throwable =>
       println("Invalid command\n")
