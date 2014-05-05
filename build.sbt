@@ -23,6 +23,8 @@ libraryDependencies += "org.openmole.ide" %% "org-openmole-ide-plugin-task-syste
 
 assemblySettings
 
+scalariformSettings
+
 jarName in assembly := "yapa.jar"
 
 //FIXME: refactor openmole so that the dependencies are well separated
