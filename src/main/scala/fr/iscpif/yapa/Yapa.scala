@@ -35,12 +35,12 @@ object Yapa extends App {
 
     // Build an new sandboxed working folder
     val uuid = UUID.randomUUID.toString
-    val cdedir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
-    cdedir.mkdirs
+    val caredir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
+    caredir.mkdirs
 
-    //Copy the cde executable into the cdedir
-    val cde = File.createTempFile("tmp", "cde", cdedir)
-    getClass.getClassLoader.getResourceAsStream("cde_2011-08-15_64bit").copy(cde)
+    //Copy the cde executable into the caredir
+    val cde = File.createTempFile("tmp", "cde", caredir)
+    getClass.getClassLoader.getResourceAsStream("care-x86_64").copy(cde)
     cde.setExecutable(true)
 
     //Run CDEPack (line break mandatory to prevent ! to consume next line)
@@ -85,7 +85,7 @@ object Yapa extends App {
 
     (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
     println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\"" + command.outputDir + "/cde-package\", \"cde-package\"))")
-    cdedir.delete
+    caredir.delete
   } catch {
     case e: Throwable =>
       println("Invalid command\n")
