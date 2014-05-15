@@ -35,29 +35,27 @@ object Yapa extends App {
 
     // Build an new sandboxed working folder
     val uuid = UUID.randomUUID.toString
-    val rootdir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
-    rootdir.mkdirs
+    val cdedir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
+    cdedir.mkdirs
 
-    //Copy the cde executable into the rootdir
-    val cde = File.createTempFile("tmp", "cde", rootdir)
+    //Copy the cde executable into the cdedir
+    val cde = File.createTempFile("tmp", "cde", cdedir)
     getClass.getClassLoader.getResourceAsStream("cde_2011-08-15_64bit").copy(cde)
     cde.setExecutable(true)
 
+    //Copy cde-package into output folder
+    val cdeOutputDir = new File(command.outputDir + "/cde-package")
+    cdeOutputDir.mkdirs
+
     //Run CDEPack (line break mandatory to prevent ! to consume next line)
-    Process(cde + " " + command.launchingCommand,
-      rootdir,
-      "PWD" -> rootdir.toString) !
+    Process(cde + " -o " + cdeOutputDir + " " + command.launchingCommand) !
 
     cde.delete
-
-    //Copy cde-package into output folder
-    command.outputDir.mkdirs
-    rootdir.move(command.outputDir)
 
     // remove ignored paths
     command.ignore.foreach {
       i =>
-        IOTools(IOTools.find(i, command.outputDir + "/cde-package").headOption, {
+        IOTools(IOTools.find(i, cdeOutputDir).headOption, {
           f: File => f.delete
         })
     }
@@ -66,12 +64,12 @@ object Yapa extends App {
     command.additions.foreach {
       i =>
         val f = new File(i)
-        val dest = new File(command.outputDir + "/cde-package/cde-root/" + i)
+        val dest = new File(cdeOutputDir + "/cde-root/" + i)
         dest.getParent.mkdirs
         f.copy(dest)
     }
 
-    val all = IOTools.recursiveFind(command.executable + ".cde", command.outputDir + "/cde-package/cde-root")
+    val all = IOTools.recursiveFind(command.executable + ".cde", cdeOutputDir + "/cde-root")
 
     val exe = IOTools(all.headOption, {
       f: File => f.getAbsolutePath
@@ -82,13 +80,19 @@ object Yapa extends App {
     val proxies = new Proxies
 
     val cleanExe = exe.getName.replace(".cde", "")
-    println(cleanExe)
 
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
+    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(cdeOutputDir), "cde-package"))))
 
     (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
-    println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\"" + command.outputDir + "/cde-package\", \"cde-package\"))")
-    rootdir.delete
+    println("import org.openmole.plugin.task.systemexec._\n" +
+      "val systemTask = SystemExecTask(" + List("\"" + cleanExe + "Task\"", "\"" + command.stripedLaunchingCommand + "\"", "\"cde-package\"").mkString(",") +
+      ")\nsystemTask addResource \"" + cdeOutputDir + "\"")
+
+    // clean temporary CDE dir and generated options file
+    cdedir.delete
+    val cdeoptions = new File("cde.options")
+    cdeoptions.delete
+
   } catch {
     case e: Throwable =>
       println("Invalid command\n")
