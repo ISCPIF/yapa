@@ -75,16 +75,18 @@ object Yapa extends App {
       f: File => f.getAbsolutePath
     })
 
-    val workingDir = exe.getParent.split("cde-package").last
+    val workingDir = "cde-package" + exe.getParent.split("cde-package").last
 
     val proxies = new Proxies
 
     val cleanExe = exe.getName.replace(".cde", "")
 
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
+    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(cdeOutputDir), "cde-package"))))
 
     (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
-    println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\"" + command.outputDir + "\"))")
+    println("import org.openmole.plugin.task.systemexec._\n" +
+      "val systemTask = SystemExecTask(" + List("\"" + cleanExe + "Task\"", "\"" + command.stripedLaunchingCommand + "\"", "\"cde-package\"").mkString(",") +
+      ")\nsystemTask addResource \"" + cdeOutputDir + "\"")
 
     // clean temporary CDE dir and generated options file
     cdedir.delete
