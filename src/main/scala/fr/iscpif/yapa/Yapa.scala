@@ -44,17 +44,18 @@ object Yapa extends App {
     cde.setExecutable(true)
 
     //Copy cde-package into output folder
-    command.outputDir.mkdirs
+    val cdeOutputDir = new File(command.outputDir + "/cde-package")
+    cdeOutputDir.mkdirs
 
     //Run CDEPack (line break mandatory to prevent ! to consume next line)
-    Process(cde + " -o " + command.outputDir + " " + command.launchingCommand) !
+    Process(cde + " -o " + cdeOutputDir + " " + command.launchingCommand) !
 
     cde.delete
 
     // remove ignored paths
     command.ignore.foreach {
       i =>
-        IOTools(IOTools.find(i, command.outputDir).headOption, {
+        IOTools(IOTools.find(i, cdeOutputDir).headOption, {
           f: File => f.delete
         })
     }
@@ -63,12 +64,12 @@ object Yapa extends App {
     command.additions.foreach {
       i =>
         val f = new File(i)
-        val dest = new File(command.outputDir + "/cde-root/" + i)
+        val dest = new File(cdeOutputDir + "/cde-root/" + i)
         dest.getParent.mkdirs
         f.copy(dest)
     }
 
-    val all = IOTools.recursiveFind(command.executable + ".cde", command.outputDir + "/cde-root")
+    val all = IOTools.recursiveFind(command.executable + ".cde", cdeOutputDir + "/cde-root")
 
     val exe = IOTools(all.headOption, {
       f: File => f.getAbsolutePath
