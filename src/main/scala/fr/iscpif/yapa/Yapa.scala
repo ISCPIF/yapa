@@ -44,7 +44,7 @@ object Yapa extends App {
     cde.setExecutable(true)
 
     //Run CDEPack (line break mandatory to prevent ! to consume next line)
-    Process(cde + " -v " + command.launchingCommand) !
+    Process(cde + " " + command.launchingCommand) !
 
     cde.delete
 
