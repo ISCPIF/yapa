@@ -84,7 +84,12 @@ object Yapa extends App {
 
     (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
     println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\"" + command.outputDir + "\"))")
+
+    // clean temporary CDE dir and generated options file
     cdedir.delete
+    val cdeoptions = new File("cde.options")
+    cdeoptions.delete
+
   } catch {
     case e: Throwable =>
       println("Invalid command\n")
