@@ -5,9 +5,9 @@ import NativePackagerKeys._
 
 name := "yapa"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.10.4"
 
-version := "0.1"
+version := "0.3-SNAPSHOT"
 
 packageArchetype.java_application
 
@@ -17,7 +17,7 @@ resolvers ++= Seq(
   "openmole-snapshots" at "http://maven.openmole.org/public"
 )
 
-libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.10.2"
+libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.10.4"
 
 libraryDependencies += "org.openmole.ide" %% "org-openmole-ide-plugin-task-systemexec" % "0.10.0-SNAPSHOT"
 
