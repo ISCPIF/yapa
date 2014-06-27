@@ -33,28 +33,29 @@ object Yapa extends App {
   try {
     val command = Command.parse(args.toList)
 
-    // Build an new sandboxed working folder
+    // build an new sandboxed working folder
     val uuid = UUID.randomUUID.toString
-    val caredir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
-    caredir.mkdirs
+    val careDir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
+    careDir.mkdirs
 
-    //Copy the cde executable into the caredir
-    val cde = File.createTempFile("tmp", "cde", caredir)
-    getClass.getClassLoader.getResourceAsStream("care-x86_64").copy(cde)
-    cde.setExecutable(true)
+    // copy the CARE executable into temporary careDir
+    val care = File.createTempFile("care_", "", careDir)
+    // TODO choose CARE binary according to underlying OS ( System.getProperty("blabla") )
+    getClass.getClassLoader.getResourceAsStream("care-x86_64").copy(care)
+    care.setExecutable(true)
 
-    //Run CDEPack (line break mandatory to prevent ! to consume next line)
-    Process(cde + " -v " + command.launchingCommand) !
+    val workingDir = "yapa-archive"
 
-    cde.delete
+    // run CARE (line break mandatory to prevent ! to consume next line)
+    Process(care + " -m -1 -o " + command.outputDir + "/" + workingDir + "/ " + command.launchingCommand) !
 
-    //Copy cde-package into output folder
-    command.outputDir.mkdirs
+    // hack to allow copy of the archive in OpenMOLE (some path would be d--------- otherwise...)
+    Process("/bin/chmod -R 777 " + command.outputDir + "/" + workingDir + "/" + "rootfs") !
 
     // remove ignored paths
     command.ignore.foreach {
       i =>
-        IOTools(IOTools.find(i, command.outputDir + "/cde-package").headOption, {
+        IOTools(IOTools.find(i, command.outputDir + "/" + workingDir).headOption, {
           f: File => f.delete
         })
     }
@@ -63,32 +64,32 @@ object Yapa extends App {
     command.additions.foreach {
       i =>
         val f = new File(i)
-        val dest = new File(command.outputDir + "/cde-package/cde-root/" + i)
+        val dest = new File(command.outputDir + "/" + workingDir + "/" + i)
         dest.getParent.mkdirs
         f.copy(dest)
     }
 
-    val all = IOTools.recursiveFind(command.executable + ".cde", command.outputDir + "/cde-package/cde-root")
+    val careExe = "re-execute.sh"
+    val taskName = command.executable + "Task"
 
-    val exe = IOTools(all.headOption, {
-      f: File => f.getAbsolutePath
-    })
-
-    val workingDir = "cde-package" + exe.getParent.split("cde-package").last
-
+    // generate GUI task
     val proxies = new Proxies
+    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(taskName, workingDir, careExe, List((new File(command.outputDir + "/" + workingDir), workingDir))))
+    (new GUISerializer).serialize(command.outputDir + "/" + command.executable + ".om", proxies, Iterable(), saveFiles = command.embedded)
 
-    val cleanExe = exe.getName.replace(".cde", "")
-    println(cleanExe)
+    // generate DSL task
+    println("import org.openmole.plugin.task.systemexec.SystemExecTask\n" +
+      "val " + taskName + " = SystemExecTask(" + List("\"" + taskName + "\"", "\"" + careExe + "\"", "\"" + workingDir + "\"").mkString(",") + ")\n" +
+      taskName + " addResource \"" + command.outputDir + "/" + workingDir + "\"")
 
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(command.outputDir + "/cde-package"), "cde-package"))))
+    // clean up temporary files
+    care.delete
+    careDir.delete
 
-    (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
-    println("val systemTask = new SystemExecTask(" + List(cleanExe + "Task", "\"" + command.stripedLaunchingCommand + "\"", "\"" + workingDir + "\"").mkString(",") + ")\nsystemTask.addResource(new File(\"" + command.outputDir + "/cde-package\", \"cde-package\"))")
-    caredir.delete
   } catch {
     case e: Throwable =>
-      println("Invalid command\n")
-      Command.help
+      // TODO remove debug print
+      e.printStackTrace()
+      println("Invalid command")
   }
 }
