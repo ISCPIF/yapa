@@ -57,11 +57,14 @@ object Yapa extends App {
     care.toFile.setExecutable(true)
 
     // run CARE (line break mandatory to prevent ! to consume next line)
-    // force run in current shell
-    Process(care + " -m -1 -o " + command.outputDir + "/" + command.workingDir + "/ " + command.launchingCommand) !
+    // default options extended with:
+    //   - unlimited archive size
+    //   - don't archive /run
+    //   - don't archive /var/run
+    Process(s"${care} -m -1 -p /run -p /var/run -o ${command.outputDir}/${command.workingDir}/ ${command.launchingCommand}") !
 
     // hack to allow copy of the archive in OpenMOLE (some path would be d--------- otherwise...)
-    Process("/bin/chmod -R 777 " + command.outputDir + "/" + command.workingDir + "/" + "rootfs") !
+    Process(s"/bin/chmod -R 777 ${command.outputDir}/${command.workingDir}/rootfs") !
 
     // remove ignored paths
     command.ignore.foreach {
