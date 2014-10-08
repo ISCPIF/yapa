@@ -35,6 +35,17 @@ object Yapa extends App {
   try {
     val command = Command.parse(args.toList)
 
+    // check compulsory parameters
+    command match {
+      case Command("", _, _, _, _, _, _) =>
+        Command.help
+        throw new RuntimeException("Unspecified output directory (-o)")
+      case Command(_, _, "", _, _, _, _) =>
+        Command.help
+        throw new RuntimeException("Unspecified launching command (-c)")
+      case _ =>
+    }
+
     // build an new sandboxed working folder
     val yapaUserDir = Files.createDirectories(Paths.get(System.getProperty("user.home"), ".yapa/"))
     val careDir = Files.createTempDirectory(yapaUserDir, "")
