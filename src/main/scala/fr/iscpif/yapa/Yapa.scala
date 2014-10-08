@@ -20,9 +20,11 @@ package fr.iscpif.yapa
 import java.io.File
 import fr.iscpif.yapa.tools.IOTools._
 import fr.iscpif.yapa.tools.IOTools
-import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
-import java.util.UUID
+import java.nio.file.{ StandardCopyOption, Paths, Files }
 import org.openmole.misc.tools.io.FileUtil._
+//import org.openmole.misc.tools.io.DirUtils._
+
+import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
 import org.openmole.ide.core.implementation.serializer.GUISerializer
 import org.openmole.ide.core.implementation.dataproxy.{ Proxies, TaskDataProxyUI }
 
@@ -33,17 +35,15 @@ object Yapa extends App {
   try {
     val command = Command.parse(args.toList)
 
-    // TODO NIO
     // build an new sandboxed working folder
-    val uuid = UUID.randomUUID.toString
-    val careDir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
-    careDir.mkdirs
+    val yapaUserDir = Files.createDirectories(Paths.get(System.getProperty("user.home"), ".yapa/"))
+    val careDir = Files.createTempDirectory(yapaUserDir, "")
 
     // copy the CARE executable into temporary careDir
-    val care = File.createTempFile("care_", "", careDir)
+    val care = Files.createTempFile(careDir, "care_", "")
     // TODO choose CARE binary according to underlying OS ( System.getProperty("blabla") )
-    getClass.getClassLoader.getResourceAsStream("care-x86_64").copy(care)
-    care.setExecutable(true)
+    Files.copy(getClass.getClassLoader.getResourceAsStream("care-x86_64"), care, StandardCopyOption.REPLACE_EXISTING)
+    care.toFile.setExecutable(true)
 
     // run CARE (line break mandatory to prevent ! to consume next line)
     // force run in current shell
@@ -56,17 +56,21 @@ object Yapa extends App {
     command.ignore.foreach {
       i =>
         IOTools(IOTools.find(i, command.outputDir + "/" + command.workingDir).headOption, {
-          f: File => f.delete
+          // FIXME get DirUtils from OpenMOLE
+          f: File =>
+            //            if (Files.isDirectory(f)) DirUtils.delete(f)
+            //            else
+            Files.delete(f)
         })
     }
 
     // add arbitrary requested path to archive
     command.additions.foreach {
       i =>
-        val f = new File(i)
-        val dest = new File(command.outputDir + "/" + command.workingDir + "/" + i)
-        dest.getParent.mkdirs
-        f.copy(dest)
+        val f = Paths.get(i)
+        val dest = Paths.get(command.outputDir, command.workingDir, i)
+        Files.createDirectories(dest)
+        Files.copy(f, dest)
     }
 
     val careExe = "re-execute.sh"
@@ -83,8 +87,8 @@ object Yapa extends App {
       taskName + " addResource \"" + command.outputDir + "/" + command.workingDir + "\"")
 
     // clean up temporary files
-    care.delete
-    careDir.delete
+    Files.delete(care)
+    Files.delete(careDir)
 
   } catch {
     case e: Throwable =>

@@ -29,7 +29,7 @@ object Command {
       case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedded = tail.head.toBoolean))
       case "-i" :: tail ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
       case "-a" :: tail ⇒ parse(dropArgs(tail), c.copy(additions = takeArgs(tail)))
-      case "-h" :: tail =>
+      case "-h" :: tail ⇒
         help
         c
       case s :: tail ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
