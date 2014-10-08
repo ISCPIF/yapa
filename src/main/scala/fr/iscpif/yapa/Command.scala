@@ -52,7 +52,9 @@ object Command {
   )
 }
 
-case class Command(val outputDir: String = "",
+case class Command(
+    val outputDir: String = "",
+    val workingDir: String = "yapa-archive",
     val launchingCommand: String = "",
     val ignore: List[String] = List(),
     val additions: List[String] = List(),

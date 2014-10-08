@@ -33,6 +33,7 @@ object Yapa extends App {
   try {
     val command = Command.parse(args.toList)
 
+    // TODO NIO
     // build an new sandboxed working folder
     val uuid = UUID.randomUUID.toString
     val careDir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
@@ -44,18 +45,17 @@ object Yapa extends App {
     getClass.getClassLoader.getResourceAsStream("care-x86_64").copy(care)
     care.setExecutable(true)
 
-    val workingDir = "yapa-archive"
-
     // run CARE (line break mandatory to prevent ! to consume next line)
-    Process(care + " -m -1 -o " + command.outputDir + "/" + workingDir + "/ " + command.launchingCommand) !
+    // force run in current shell
+    Process(care + " -m -1 -o " + command.outputDir + "/" + command.workingDir + "/ " + command.launchingCommand) !
 
     // hack to allow copy of the archive in OpenMOLE (some path would be d--------- otherwise...)
-    Process("/bin/chmod -R 777 " + command.outputDir + "/" + workingDir + "/" + "rootfs") !
+    Process("/bin/chmod -R 777 " + command.outputDir + "/" + command.workingDir + "/" + "rootfs") !
 
     // remove ignored paths
     command.ignore.foreach {
       i =>
-        IOTools(IOTools.find(i, command.outputDir + "/" + workingDir).headOption, {
+        IOTools(IOTools.find(i, command.outputDir + "/" + command.workingDir).headOption, {
           f: File => f.delete
         })
     }
@@ -64,7 +64,7 @@ object Yapa extends App {
     command.additions.foreach {
       i =>
         val f = new File(i)
-        val dest = new File(command.outputDir + "/" + workingDir + "/" + i)
+        val dest = new File(command.outputDir + "/" + command.workingDir + "/" + i)
         dest.getParent.mkdirs
         f.copy(dest)
     }
@@ -74,13 +74,13 @@ object Yapa extends App {
 
     // generate GUI task
     val proxies = new Proxies
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(taskName, workingDir, careExe, List((new File(command.outputDir + "/" + workingDir), workingDir))))
+    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(taskName, command.workingDir, careExe, List((new File(command.outputDir + "/" + command.workingDir), command.workingDir))))
     (new GUISerializer).serialize(command.outputDir + "/" + command.executable + ".om", proxies, Iterable(), saveFiles = command.embedded)
 
     // generate DSL task
     println("import org.openmole.plugin.task.systemexec.SystemExecTask\n" +
-      "val " + taskName + " = SystemExecTask(" + List("\"" + taskName + "\"", "\"" + careExe + "\"", "\"" + workingDir + "\"").mkString(",") + ")\n" +
-      taskName + " addResource \"" + command.outputDir + "/" + workingDir + "\"")
+      "val " + taskName + " = SystemExecTask(" + List("\"" + taskName + "\"", "\"" + careExe + "\"", "\"" + command.workingDir + "\"").mkString(",") + ")\n" +
+      taskName + " addResource \"" + command.outputDir + "/" + command.workingDir + "\"")
 
     // clean up temporary files
     care.delete
@@ -88,7 +88,7 @@ object Yapa extends App {
 
   } catch {
     case e: Throwable =>
-      // TODO remove debug print
+      // FIXME remove debug print
       e.printStackTrace()
       println("Invalid command")
   }
