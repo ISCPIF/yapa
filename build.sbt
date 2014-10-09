@@ -112,7 +112,8 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
                  "joda-time-1.6.jar",
                  "scala-arm_2.10-1.3.jar",
                  "scala-actors-2.10.3.jar",
-                 "org-netbeans-swing-outline-RELEASE73.jar"
+                 "org-netbeans-swing-outline-RELEASE73.jar",
+		 "org-scala-lang-scala-library_2.10-0.10.0-SNAPSHOT.jar"
                  ).contains(f.data.getName)
     }
  }
