@@ -102,7 +102,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
                  "jasypt-1.8.jar",
                  "commons-beanutils-core-1.8.0.jar",
                  "commons-beanutils-1.7.0.jar",
-//                 "scala-reflect-2.10.3.jar",
+                 "scala-reflect-2.10.4.jar",
                  "scala-library.jar",
                  "scala-io-core_2.10-0.4.2.jar",
                  "scala-io-file_2.10-0.4.2.jar",
