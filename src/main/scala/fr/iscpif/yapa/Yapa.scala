@@ -20,9 +20,11 @@ package fr.iscpif.yapa
 import java.io.File
 import fr.iscpif.yapa.tools.IOTools._
 import fr.iscpif.yapa.tools.IOTools
-import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
-import java.util.UUID
+import java.nio.file.{ StandardCopyOption, Paths, Files }
 import org.openmole.misc.tools.io.FileUtil._
+//import org.openmole.misc.tools.io.DirUtils._
+
+import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
 import org.openmole.ide.core.implementation.serializer.GUISerializer
 import org.openmole.ide.core.implementation.dataproxy.{ Proxies, TaskDataProxyUI }
 
@@ -33,69 +35,78 @@ object Yapa extends App {
   try {
     val command = Command.parse(args.toList)
 
-    // Build an new sandboxed working folder
-    val uuid = UUID.randomUUID.toString
-    val cdedir = new File(System.getProperty("user.home"), ".yapa/" + uuid)
-    cdedir.mkdirs
+    // check compulsory parameters
+    command match {
+      case Command("", _, _, _, _, _, _) =>
+        Command.help
+        throw new RuntimeException("Unspecified output directory (-o)")
+      case Command(_, _, "", _, _, _, _) =>
+        Command.help
+        throw new RuntimeException("Unspecified launching command (-c)")
+      case _ =>
+    }
 
-    //Copy the cde executable into the cdedir
-    val cde = File.createTempFile("tmp", "cde", cdedir)
-    getClass.getClassLoader.getResourceAsStream("cde_2011-08-15_64bit").copy(cde)
-    cde.setExecutable(true)
+    // build an new sandboxed working folder
+    val yapaUserDir = Files.createDirectories(Paths.get(System.getProperty("user.home"), ".yapa/"))
+    val careDir = Files.createTempDirectory(yapaUserDir, "")
 
-    //Copy cde-package into output folder
-    val cdeOutputDir = new File(command.outputDir + "/cde-package")
-    cdeOutputDir.mkdirs
+    // copy the CARE executable into temporary careDir
+    val care = Files.createTempFile(careDir, "care_", "")
+    // TODO choose CARE binary according to underlying OS ( System.getProperty("blabla") )
+    Files.copy(getClass.getClassLoader.getResourceAsStream("care-x86_64"), care, StandardCopyOption.REPLACE_EXISTING)
+    care.toFile.setExecutable(true)
 
-    //Run CDEPack (line break mandatory to prevent ! to consume next line)
-    Process(cde + " -o " + cdeOutputDir + " " + command.launchingCommand) !
+    // run CARE (line break mandatory to prevent ! to consume next line)
+    // default options extended with:
+    //   - unlimited archive size
+    //   - don't archive /run
+    //   - don't archive /var/run
+    Process(s"${care} -m -1 -p /run -p /var/run -o ${command.outputDir}/${command.workingDir}/ ${command.launchingCommand}") !
 
-    cde.delete
+    // hack to allow copy of the archive in OpenMOLE (some path would be d--------- otherwise...)
+    Process(s"/bin/chmod -R 777 ${command.outputDir}/${command.workingDir}/rootfs") !
 
     // remove ignored paths
     command.ignore.foreach {
       i =>
-        IOTools(IOTools.find(i, cdeOutputDir).headOption, {
-          f: File => f.delete
+        IOTools(IOTools.find(i, command.outputDir + "/" + command.workingDir).headOption, {
+          // FIXME get DirUtils from OpenMOLE
+          f: File =>
+            //            if (Files.isDirectory(f)) DirUtils.delete(f)
+            //            else
+            Files.delete(f)
         })
     }
 
     // add arbitrary requested path to archive
     command.additions.foreach {
       i =>
-        val f = new File(i)
-        val dest = new File(cdeOutputDir + "/cde-root/" + i)
-        dest.getParent.mkdirs
-        f.copy(dest)
+        val f = Paths.get(i)
+        val dest = Paths.get(command.outputDir, command.workingDir, i)
+        Files.createDirectories(dest)
+        Files.copy(f, dest)
     }
 
-    val all = IOTools.recursiveFind(command.executable + ".cde", cdeOutputDir + "/cde-root")
+    val careExe = "re-execute.sh"
+    val taskName = command.executable + "Task"
 
-    val exe = IOTools(all.headOption, {
-      f: File => f.getAbsolutePath
-    })
-
-    val workingDir = "cde-package" + exe.getParent.split("cde-package").last
-
+    // generate GUI task
     val proxies = new Proxies
+    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(taskName, command.workingDir, careExe, List((new File(command.outputDir + "/" + command.workingDir), command.workingDir))))
+    (new GUISerializer).serialize(command.outputDir + "/" + command.executable + ".om", proxies, Iterable(), saveFiles = command.embedded)
 
-    val cleanExe = exe.getName.replace(".cde", "")
+    // generate DSL task
+    println("import org.openmole.plugin.task.systemexec.SystemExecTask\n" +
+      "val " + taskName + " = SystemExecTask(" + List("\"" + taskName + "\"", "\"" + careExe + "\"", "\"" + command.workingDir + "\"").mkString(",") + ")\n" +
+      taskName + " addResource \"" + command.outputDir + "/" + command.workingDir + "\"")
 
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(cleanExe + "Task", workingDir, command.stripedLaunchingCommand, List((new File(cdeOutputDir), "cde-package"))))
-
-    (new GUISerializer).serialize(command.outputDir + "/" + cleanExe + ".om", proxies, Iterable(), saveFiles = command.embedded)
-    println("import org.openmole.plugin.task.systemexec._\n" +
-      "val systemTask = SystemExecTask(" + List("\"" + cleanExe + "Task\"", "\"" + command.stripedLaunchingCommand + "\"", "\"cde-package\"").mkString(",") +
-      ")\nsystemTask addResource \"" + cdeOutputDir + "\"")
-
-    // clean temporary CDE dir and generated options file
-    cdedir.delete
-    val cdeoptions = new File("cde.options")
-    cdeoptions.delete
-
+    // clean up temporary files
+    Files.delete(care)
+    Files.delete(careDir)
   } catch {
     case e: Throwable =>
-      println("Invalid command\n")
-      Command.help
+      // FIXME remove debug print
+      e.printStackTrace()
+      println("Invalid command")
   }
 }

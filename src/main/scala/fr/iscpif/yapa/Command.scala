@@ -29,7 +29,7 @@ object Command {
       case "-e" :: tail ⇒ parse(tail.tail, c.copy(embedded = tail.head.toBoolean))
       case "-i" :: tail ⇒ parse(dropArgs(tail), c.copy(ignore = takeArgs(tail)))
       case "-a" :: tail ⇒ parse(dropArgs(tail), c.copy(additions = takeArgs(tail)))
-      case "-h" :: tail =>
+      case "-h" :: tail ⇒
         help
         c
       case s :: tail ⇒ parse(tail, c.copy(unknown = s :: c.unknown))
@@ -52,13 +52,13 @@ object Command {
   )
 }
 
-case class Command(val outputDir: String = "",
+case class Command(
+    val outputDir: String = "",
+    val workingDir: String = "yapa-archive",
     val launchingCommand: String = "",
     val ignore: List[String] = List(),
     val additions: List[String] = List(),
     val embedded: Boolean = true,
     val unknown: List[String] = List()) {
   val executable = launchingCommand.split(" ").head
-
-  val stripedLaunchingCommand = launchingCommand.replace(executable, executable.split("/").last).replaceFirst("\\s|$", ".cde ")
 }
