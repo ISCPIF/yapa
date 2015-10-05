@@ -15,6 +15,8 @@ resolvers ++= Seq(
 
 libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.11.7"
 
+libraryDependencies += "org.openmole" %% "org-openmole-tool-file" % "6.0-SNAPSHOT"
+
 scalariformSettings
 
 assemblyJarName in assembly := "yapa.jar"

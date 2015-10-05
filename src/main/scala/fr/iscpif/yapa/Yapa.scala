@@ -17,18 +17,14 @@
  */
 package fr.iscpif.yapa
 
-import java.io.File
 import fr.iscpif.yapa.tools.IOTools._
 import fr.iscpif.yapa.tools.IOTools
+
+import java.io.File
 import java.nio.file.{ StandardCopyOption, Paths, Files }
-import org.openmole.misc.tools.io.FileUtil._
-//import org.openmole.misc.tools.io.DirUtils._
-
-import org.openmole.ide.plugin.task.systemexec.SystemExecTaskDataUI010
-import org.openmole.ide.core.implementation.serializer.GUISerializer
-import org.openmole.ide.core.implementation.dataproxy.{ Proxies, TaskDataProxyUI }
-
 import sys.process._
+
+import org.openmole.tool.file._
 
 object Yapa extends App {
 
@@ -89,11 +85,6 @@ object Yapa extends App {
 
     val careExe = "re-execute.sh"
     val taskName = command.executable + "Task"
-
-    // generate GUI task
-    val proxies = new Proxies
-    proxies += TaskDataProxyUI(new SystemExecTaskDataUI010(taskName, command.workingDir, careExe, List((new File(command.outputDir + "/" + command.workingDir), command.workingDir))))
-    (new GUISerializer).serialize(command.outputDir + "/" + command.executable + ".om", proxies, Iterable(), saveFiles = command.embedded)
 
     // generate DSL task
     println("import org.openmole.plugin.task.systemexec.SystemExecTask\n" +
