@@ -48,8 +48,7 @@ object Command {
     "-i (optional)  : the list of resources that have to be ignored in the final archive\n" +
     "-a (optional)  : the list of resources to be arbitrarily added to the final archive\n\n" +
     "Example: ./yapa -o /tmp/out -c \"myCode -a 14 -b 7 -o /home/toto/file1.csv\" -i excludedPath1 excludedPath2 -a addedPath1 addedPath2\n\n" +
-    "Visit: http://www.openmole.org/documentation/package-your-external-applications-with-yapa/"
-  )
+    "Visit: http://www.openmole.org/documentation/package-your-external-applications-with-yapa/")
 }
 
 case class Command(
@@ -59,6 +58,7 @@ case class Command(
     val ignore: List[String] = List(),
     val additions: List[String] = List(),
     val embedded: Boolean = true,
-    val unknown: List[String] = List()) {
+    val unknown: List[String] = List()
+) {
   val executable = launchingCommand.split(" ").head
 }

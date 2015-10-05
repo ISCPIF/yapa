@@ -1,15 +1,11 @@
-import AssemblyKeys._
-import sbtassembly.Plugin._
 import com.typesafe.sbt.SbtNativePackager.Universal
 import NativePackagerKeys._
 
 name := "yapa"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.11.7"
 
 version := "0.3-SNAPSHOT"
-
-packageArchetype.java_application
 
 resolvers ++= Seq(
   "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
@@ -17,15 +13,13 @@ resolvers ++= Seq(
   "openmole-snapshots" at "http://maven.openmole.org/public"
 )
 
-libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.10.4"
-
-libraryDependencies += "org.openmole.ide" %% "org-openmole-ide-plugin-task-systemexec" % "0.10.0-SNAPSHOT"
-
-assemblySettings
+libraryDependencies += "org.scala-lang" % "scala-compiler" % "2.11.7"
 
 scalariformSettings
 
-jarName in assembly := "yapa.jar"
+assemblyJarName in assembly := "yapa.jar"
+
+test in assembly := {}
 
 //FIXME: refactor openmole so that the dependencies are well separated
 excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>

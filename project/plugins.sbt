@@ -2,8 +2,10 @@ resolvers += "Sonatype snapshots" at "http://oss.sonatype.org/content/repositori
 
 resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
 
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.9.2")
+resolvers += "Sonatype OSS Releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "0.6.4")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "0.14.0")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.0.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-native-packager" % "1.0.3")
+
+addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.5.1")
