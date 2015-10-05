@@ -113,7 +113,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
     }
  }
 
- resourceGenerators in Compile <+= (target in Compile, scalaBinaryVersion) map { (dir, version) =>
+resourceGenerators in Compile <+= (target in Compile, scalaBinaryVersion) map { (dir, version) =>
   val yapadir = dir / "scala-" + version + "/yapa"
   val file = new File(yapadir)
   IO.write(file, "#!/bin/sh\njava -Xmx256M -jar ../lib/yapa.jar \"$@\"")

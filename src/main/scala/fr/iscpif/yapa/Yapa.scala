@@ -87,9 +87,11 @@ object Yapa extends App {
     val taskName = command.executable + "Task"
 
     // generate DSL task
-    println("import org.openmole.plugin.task.systemexec.SystemExecTask\n" +
-      "val " + taskName + " = SystemExecTask(" + List("\"" + taskName + "\"", "\"" + careExe + "\"", "\"" + command.workingDir + "\"").mkString(",") + ")\n" +
-      taskName + " addResource \"" + command.outputDir + "/" + command.workingDir + "\"")
+    println(s"""
+      val ${taskName} = SystemExecTask("./${command.workingDir}/${careExe}") set (
+        resources += "${command.outputDir}/${command.workingDir}"
+      )
+      """)
 
     // clean up temporary files
     Files.delete(care)
